@@ -2,38 +2,33 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("COC")
 
+#unscheduled mode
+process.options = cms.untracked.PSet(allowUnscheduled = cms.untracked.bool(True) )
+
 ## MessageLogger
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring("file:patTuple.root")
+    fileNames = cms.untracked.vstring("file:patTuple_standard.root")
 )
 
 ## Maximal Number of Events
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
-                                
-## let it run
+
+## load the configuration for the customized COC running
 process.load("PhysicsTools.PatExamples.customizedSelection_cff")
 process.load("PhysicsTools.PatExamples.customizedCOC_cff")
 
-process.p = cms.Path(
-    process.customSelection
-   *process.customCOC
-    )
-
-from PhysicsTools.PatAlgos.patEventContent_cff import patEventContent
+## define the name and content of the output file
 process.out = cms.OutputModule("PoolOutputModule",
                                fileName = cms.untracked.string('cocTuple.root'),
-                               # save only events passing the full path
-                               SelectEvents   = cms.untracked.PSet( SelectEvents = cms.vstring('p') ),
-                               # save PAT Layer 1 output; you need a '*' to
-                               # unpack the list of commands 'patEventContent'
                                outputCommands = cms.untracked.vstring(
                                    'keep *',
-                                  #'drop *_selectedPatElectrons_*_*',
                                    'drop *_selectedPatJets_*_*',
                                    'keep *_*_caloTowers_*',
-                                   'keep *_*_genJets_*')
-                               )
+                                   'keep *_*_genJets_*'
+                                   )
+                                )
 
 process.outpath = cms.EndPath(process.out)
+
